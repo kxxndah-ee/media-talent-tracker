@@ -170,28 +170,64 @@ def main():
     with tab1:
         st.subheader("인물 및 경력 검색")
 
-        filter_opts = repo.get_filter_options()
-        f_col1, f_col2, f_col3, f_col4 = st.columns([1.5, 1.5, 1.5, 2])
+        search_mode = st.radio(
+            "검색 방식을 선택하세요",
+            [
+                "👤 이름 검색",
+                "🏢 매체, 부서 / 매체, 직급 검색",
+                "📰 매체(언론사) 검색",
+            ],
+            horizontal=True,
+        )
 
-        with f_col1:
-            company_filter = st.selectbox("언론사", ["전체"] + filter_opts["companies"])
-        with f_col2:
-            dept_filter = st.selectbox("부서/국", ["전체"] + filter_opts["departments"])
-        with f_col3:
-            title_filter = st.selectbox("직급/직책", ["전체"] + filter_opts["titles"])
-        with f_col4:
-            search_query = st.text_input("이름 또는 통합 키워드 검색", placeholder="예: 홍길동, 정치, 금융")
+        all_opts = repo.get_filter_options()
+        name_query = ""
+        company_query = ""
+        dept_query = ""
+        title_query = ""
 
-        sel_company = "" if company_filter == "전체" else company_filter
-        sel_dept = "" if dept_filter == "전체" else dept_filter
-        sel_title = "" if title_filter == "전체" else title_filter
+        if search_mode == "👤 이름 검색":
+            col_s1, col_s2 = st.columns([3, 1])
+            with col_s1:
+                name_query = st.text_input(
+                    "인물 이름 입력 (한글 또는 한자)",
+                    placeholder="예: 홍길동, 김민준, 朴智勳, 정우성",
+                    help="기자 또는 언론인의 이름을 입력하면 즉시 검색됩니다.",
+                )
+            with col_s2:
+                st.write("")
+                st.write("")
+                st.caption("💡 한자 성명 검색도 지원합니다.")
+
+        elif search_mode == "🏢 매체, 부서 / 매체, 직급 검색":
+            col_m1, col_m2, col_m3 = st.columns(3)
+            with col_m1:
+                sel_comp = st.selectbox("언론사(매체) 선택 *", all_opts["companies"])
+                company_query = sel_comp
+            # Dynamically get departments and titles for the selected company
+            comp_opts = repo.get_filter_options(company=sel_comp)
+            with col_m2:
+                dept_choice = st.selectbox("부서 선택", ["전체"] + comp_opts["departments"])
+                dept_query = "" if dept_choice == "전체" else dept_choice
+            with col_m3:
+                title_choice = st.selectbox("직급/직책 선택", ["전체"] + comp_opts["titles"])
+                title_query = "" if title_choice == "전체" else title_choice
+            st.caption("💡 부서나 직급 중 하나만 선택하셔도 되고, 둘 다 선택하여 상세 검색할 수도 있습니다.")
+
+        elif search_mode == "📰 매체(언론사) 검색":
+            col_o1, col_o2 = st.columns([2, 2])
+            with col_o1:
+                company_query = st.selectbox("조회할 언론사(매체) 선택", all_opts["companies"])
+            with col_o2:
+                st.write("")
+                st.write("")
+                st.caption(f"💡 '{company_query}'에 소속된 전체 인원 목록을 조회합니다.")
 
         persons = repo.search_persons(
-            name=search_query if search_query else "",
-            company=sel_company,
-            department=sel_dept,
-            title=sel_title,
-            keyword=search_query if search_query and not (sel_company or sel_dept or sel_title) else "",
+            name=name_query,
+            company=company_query,
+            department=dept_query,
+            title=title_query,
         )
 
         st.caption(f"검색 결과: 총 {len(persons)}명의 언론인이 조회되었습니다.")

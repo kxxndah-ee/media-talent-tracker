@@ -398,16 +398,28 @@ class Repository:
             conn.commit()
 
     # ----------------- Metadata & Stats -----------------
-    def get_filter_options(self) -> dict[str, list[str]]:
+    def get_filter_options(self, company: str = "") -> dict[str, list[str]]:
         with self._get_conn() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT DISTINCT current_company FROM persons WHERE current_company IS NOT NULL AND current_company != '' ORDER BY current_company")
             companies = [r[0] for r in cursor.fetchall()]
 
-            cursor.execute("SELECT DISTINCT current_department FROM persons WHERE current_department IS NOT NULL AND current_department != '' ORDER BY current_department")
+            if company and company != "전체":
+                cursor.execute(
+                    "SELECT DISTINCT current_department FROM persons WHERE current_company = ? AND current_department IS NOT NULL AND current_department != '' ORDER BY current_department",
+                    (company,),
+                )
+            else:
+                cursor.execute("SELECT DISTINCT current_department FROM persons WHERE current_department IS NOT NULL AND current_department != '' ORDER BY current_department")
             depts = [r[0] for r in cursor.fetchall()]
 
-            cursor.execute("SELECT DISTINCT current_title FROM persons WHERE current_title IS NOT NULL AND current_title != '' ORDER BY current_title")
+            if company and company != "전체":
+                cursor.execute(
+                    "SELECT DISTINCT current_title FROM persons WHERE current_company = ? AND current_title IS NOT NULL AND current_title != '' ORDER BY current_title",
+                    (company,),
+                )
+            else:
+                cursor.execute("SELECT DISTINCT current_title FROM persons WHERE current_title IS NOT NULL AND current_title != '' ORDER BY current_title")
             titles = [r[0] for r in cursor.fetchall()]
 
             cursor.execute("SELECT DISTINCT primary_beat FROM persons WHERE primary_beat IS NOT NULL AND primary_beat != '' ORDER BY primary_beat")
