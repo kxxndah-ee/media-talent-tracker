@@ -1,7 +1,2 @@
-[server]
-port = 8502
-headless = false
-address = "0.0.0.0"
-
 [browser]
 gatherUsageStats = false

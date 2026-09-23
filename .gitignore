@@ -9,6 +9,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Database and secrets
-*.db
+# Secrets
 .env
