@@ -5,5 +5,5 @@ echo  언론사 인사이동 트래커 앱을 실행하고 있습니다...
 echo  잠시 후 인터넷 브라우저 창이 자동으로 열립니다!
 echo ==============================================
 cd /d "%~dp0"
-uv run streamlit run run.py
+uv run streamlit run run.py --browser.gatherUsageStats false
 pause
